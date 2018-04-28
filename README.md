@@ -1,4 +1,4 @@
-#### 浅谈 React16 新特性
+## 浅谈 React16 新特性
 
 ![preview](https://github.com/Hfimy/React16_Introduction/blob/master/preview.gif)
 
