@@ -1,0 +1,524 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>reveal.js</title>
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/black.css">
+
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+	<link rel="stylesheet" href="css/print/paper.css">
+	<link rel="stylesheet" href="css/custom.css">
+	<!-- Printing and PDF exports -->
+	<!-- <script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script> -->
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+			<section>
+				<section>
+					<h6>WEB团队内部分享交流会</h6>
+					<p class='fs-22'>作者：@Hfimy</p>
+				</section>
+				<section>
+					<h4>进步始于交流，收获源于分享</h4>
+				</section>
+				<!-- <section>
+					<h4>主题：WEB技术分享与交流</h4>
+					<h4>时间：周五16：00 - 17：00</h4>
+				</section>
+				<section>
+					<h4 class='ta-l'>会议章程</h4>
+					<ol>
+						<li>主讲人分享技术心得等，30分钟左右</li>
+						<li>组员依次提出本周遇到的技术问题，20分钟左右</li>
+						<li>暂定为自由讨论，10分钟左右</li>
+					</ol>
+				</section> -->
+			</section>
+			<section>
+				进入主题
+			</section>
+			<section data-markdown>
+				<script type='text/template'>
+					<p class='ta-c'>浅谈React16新特性</p>
+					* error boundaries
+					* portals
+					* render方法新增返回类型
+					* 支持自定义DOM属性
+					* 更好的服务器端渲染
+					* 新的打包策略
+					<!-- * MIT许可和新的核心架构 -->
+				</script>
+			</section>
+			<section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-c'>Better Error Handling</p>
+						&emsp;&emsp;之前，组件渲染过程中的运行时错误可能会使应用处于故障状态，产生隐蔽的错误消息并需要刷新页面才能恢复。为了解决这个问题，React16 使用更灵活的错误处理策略。默认情况下，如果在组件的渲染或生命周期方法中引发错误，将会从根节点卸载整个组件树。这可以防止显示损坏的数据，但是，这可能不是理想的用户体验。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						部分UI中的JavaScript错误不应该破坏整个应用程序。为了解决这个问题，React16 引入了error boundaries，中文译为"错误边界"的新概念。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						错误边界是一种特殊的React组件，可以在其子组件树中的任何位置捕获JavaScript错误，记录这些错误并显示回退UI，而不是崩溃的组件树。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p>React16 新增生命周期：`componentDidCatch`</p>
+						如果一个类组件定义了该生命周期方法，它将成为一个错误边界。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						```
+						// 最佳实践
+						class ErrorBoundary extends React.Component {
+							state = {
+							  hasError: false
+							};
+							componentDidCatch(error, info) {
+							  this.setState({ hasError: true });
+							}
+							render() {
+							  if (this.state.hasError) {
+								return <h1>Something went wrong.</h1>;
+							  }
+							  return this.props.children;
+							}
+						}						  
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						```
+						// 作为常规组件使用
+						<ErrorBoundary>
+							<App />
+						</ErrorBoundary>
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-c'>Portals</p>
+						<p>&emsp;&emsp;Portals，中文可以理解为"传送门"，提供了一种一流的方法来将子组件渲染到父组件的 DOM 结构之外的DOM节点中。默认情况下，React组件树和DOM树是完全对应的，对于一些 Modal , Overlay 之类的组件实现，通常是将它们放在顶层，但逻辑上它们可能只是属于某个子组件，这不利于组件的结构组织。</p>
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						```
+						ReactDOM.createPortal(child, container)
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						通过使用 `React.createPortal` ，我们可以将组件渲染到我们想要的任意DOM节点中，但它依然存在于React树中。因此，该组件的行为与其它普通组件相似，在portal内部触发的事件也将传播到父组件。对于组件划分来说，这是一个很棒的特性。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-c'>New render return types</p>
+						React16 添加了新的返回类型：fragments and strings
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						* fragments
+						<br/>
+						React16 支持在组件的render方法中返回一组元素。与其它数组一样，需要为每个元素添加一个唯一的key值以避免警告：
+						```
+						render() {
+							// No need to wrap list items in an extra element!
+							return [
+							  // Don't forget the keys 
+							  <li key="A">First item</li>,
+							  <li key="B">Second item</li>,
+							  <li key="C">Third item</li>,
+							];
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						从React16.2.0 开始，进一步提高对 JSX特殊片段语法的支持。
+						```
+						render() {
+							return (
+							  <>
+								<ChildA />
+								<ChildB />
+								<ChildC />
+							  </>
+							);
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						* string
+						<br/>
+						React16 支持在组件的render方法中返回字符串：
+						```
+						render() {
+							return 'Look ma, no spans!';
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-l'>所有支持的完整返回类型列表：</p>
+						
+						* react elements (jsx)
+						* string
+						* numbers
+						* booleans
+						* null
+						* fragments
+						* portals
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-c'>Support for custom DOM attributes</p>
+						&emsp;&emsp;在之前的版本中，React会忽略无法识别的HTML和SVG属性，如果您使用React无法识别的属性编写JSX，则React将跳过它。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						```
+						// Your code:
+						<div mycustomattribute="something" />
+						```
+						```
+						// React 15 output:
+						<div />
+						```
+						```
+						// React 16 output:
+						<div mycustomattribute="something" />
+						```
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						现在，React16 不再忽略无法识别的HTML和SVG属性，而将它们直接传递给DOM。这个改动让React去掉了大部分的属性白名单，从而减小了文件大小。
+					</script>
+				</section>
+				<!-- <section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p>注意，您仍然应该使用规范的React命名来获取已知属性。</p>
+					</script>
+				</section> -->
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-c'>Better server-side rendering</p>
+						&emsp;&emsp;React16 包含一个完全重写的SSR。新的实现非常快，接近3倍性能于React15 ，现在提供一种流模式streaming，可以更快地把渲染的字节发送到客户端。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						另外，React16 在hydrating ( 注：指客户端基于服务器返回的HTML再次重新渲染）方面表现的更好，它不再要求初始渲染与服务器的结果完全匹配。相反，它会尝试尽可能多地重用现有的DOM。没有更多的校验和！一般来说，不建议在服务器和客户端渲染不同的内容，但在某些情况下（如时间戳）可能会有用。
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						<p class='ta-c'>Reduced file size</p>
+						&emsp;&emsp;React16 的体积比上个版本减小了32% 
+						* react is 5.3 kb (2.2 kb gzipped), down from 20.7 kb (6.9 kb gzipped).
+						* react-dom is 103.7 kb (32.6 kb gzipped), down from 141 kb (42.9 kb gzipped).
+						* react + react-dom is 109 kb (34.8 kb gzipped), down from 161.7 kb (49.8 kb gzipped).
+					</script>
+				</section>
+				<section data-markdown class='ta-l'>
+					<script type='text/template'>
+						React体积的减小由于使用了新的打包策略，现在去掉了process.env检查，并且使用Rollup作为打包工具。
+					</script>
+				</section>
+				<!-- <section data-markdown>
+					<script type='text/template'>
+						<p class='ta-c'>Fiber</p>
+						<p class='ta-l'>&emsp;&emsp;React 16采用了新的核心架构 " Fiber " ,Facebook官方声称：Fiber是对核心算法的一次重新实现，我们改写了React。</p>
+					</script>
+				</section> -->
+			</section>
+			<section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-c'>扩展</p>
+						* 组件生命周期变更
+						* createRef API
+						* forwardRef API
+						* Official Context API
+						* StrictMode Component
+					</script>
+				</section>
+			</section>
+			<section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-c'>组件生命周期变更</p>
+					<p class='ta-c'>未来的React版本将启用异步渲染更新</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>* 16.3：添加3个UNSAFE前缀的生命周期</p>
+						```
+						UNSAFE_componentWillMount(){}
+
+						UNSAFE_componentWillReceiveProps(nextProps){}
+
+						UNSAFE_componentWillUpdate(nextProps,nextState){}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>* 未来的16.x版本：将对以下生命周期启用弃用警告</p>
+						```
+						componentWillMount(){}
+
+						componentWillReceiveProps(nextProps){}
+
+						componentWillUpdate(nextProps,nextState){}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>* 17.0：删除以下生命周期</p>
+						```
+						componentWillMount(){}
+
+						componentWillReceiveProps(nextProps){}
+						
+						componentWillUpdate(nextProps,nextState){}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						* 新增生命周期：static getDerivedStateFromProps
+						```
+						class Example extends React.Component {
+							static getDerivedStateFromProps(nextProps, prevState) {
+							  // ...
+							}
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>&emsp;&emsp;The new static getDerivedStateFromProps lifecycle is invoked after a component is instantiated as well as when it receives new props. It can return an object to update state, or null to indicate that the new props do not require any state updates.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>&emsp;&emsp;Together with componentDidUpdate, this new lifecycle should cover all use cases for the legacy componentWillReceiveProps.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						* 新增生命周期： getSnapshotBeforeUpdate
+						```
+						class Example extends React.Component {
+							getSnapshotBeforeUpdate(prevProps, prevState) {
+							  // ...
+							}
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>&emsp;&emsp;The new getSnapshotBeforeUpdate lifecycle is called right before mutations are made (e.g. before the DOM is updated). The return value for this lifecycle will be passed as the third parameter to componentDidUpdate. (This lifecycle isn’t often needed, but can be useful in cases like manually preserving scroll position during rerenders.)</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						<p class='ta-l'>&emsp;&emsp;Together with componentDidUpdate, this new lifecycle should cover all use cases for the legacy componentWillUpdate.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-c'>createRef API</p>
+					<p class='ta-l'>&emsp;&emsp;Previously, React provided two ways of managing refs: the legacy string ref API and the callback API. Although the string ref API was the more convenient of the two, it had several downsides and so our official recommendation was to use the callback form instead.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>&emsp;&emsp;Version 16.3 adds a new option for managing refs that offers the convenience of a string ref without any of the downsides:</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						```
+						class MyComponent extends React.Component {
+							constructor(props) {
+							  super(props);
+						  
+							  this.inputRef = React.createRef();
+							}
+						  
+							render() {
+							  return <input type="text" ref={this.inputRef} />;
+							}
+						  
+							componentDidMount() {
+							  this.inputRef.current.focus();
+							}
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-c'>forwardRef API</p>
+					<p class='ta-l'>&emsp;&emsp;Generally, React components are declarative, but sometimes imperative access to the component instances and the underlying DOM nodes is necessary. This is common for use cases like managing focus, selection, or animations. React provides refs as a way to solve this problem. However, component encapsulation poses some challenges with refs.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>&emsp;&emsp;For example, if you replace a `<button>` with a custom `<FancyButton>` component, the ref attribute on it will start pointing at the wrapper component instead of the DOM node (and would be null for functional components). While this is desirable for “application-level” components like FeedStory or Comment that need to be encapsulated, it can be annoying for “leaf” components such as FancyButton or MyTextInput that are typically used like their DOM counterparts, and might need to expose their DOM nodes.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>&emsp;&emsp;Ref forwarding is a new opt-in feature that lets some components take a ref they receive, and pass it further down (in other words, “forward” it) to a child. In the example below, FancyButton forwards its ref to a DOM button that it renders:</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						```
+						const FancyButton = React.forwardRef((props, ref) => (
+							<button ref={ref} className="FancyButton">
+							  {props.children}
+							</button>
+						));
+						  
+						// You can now get a ref directly to the DOM button:
+						const ref = React.createRef();
+						<FancyButton ref={ref}>Click me!</FancyButton>;
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>&emsp;&emsp;This way, components using FancyButton can get a ref to the underlying button DOM node and access it if necessary—just like if they used a DOM button directly.Ref forwarding is not limited to “leaf” components that render DOM nodes. If you write higher order components, we recommend using ref forwarding to automatically pass the ref down to the wrapped class component instances.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-c'>Official Context API</p>
+					<p class='ta-l'>&emsp;&emsp;For many years, React has offered an experimental API for context. Although it was a powerful tool, its use was discouraged because of inherent problems in the API, and because we always intended to replace the experimental API with a better one.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>&emsp;&emsp;Version 16.3 introduces a new context API that is more efficient and supports both static type checking and deep updates.Here is an example illustrating how you might inject a “theme” using the new context API:</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+						```
+						const ThemeContext = React.createContext('light');
+
+						class ThemeProvider extends React.Component {
+						  state = { theme: 'light' };
+						  render() {
+							return (
+							  <ThemeContext.Provider value={this.state.theme}>
+								{this.props.children}
+							  </ThemeContext.Provider>
+							);
+						  }
+						}
+
+						class ThemedButton extends React.Component {
+						  render() {
+							return (
+							  <ThemeContext.Consumer>
+								{theme => <Button theme={theme} />}
+							  </ThemeContext.Consumer>
+							);
+						  }
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-c'>StrictMode Component</p>
+					<p class='ta-l'>&emsp;&emsp;StrictMode is a tool for highlighting potential problems in an application. Like Fragment, StrictMode does not render any visible UI. It activates additional checks and warnings for its descendants.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>&emsp;&emsp;Although it is not possible for strict mode to catch all problems (e.g. certain types of mutation), it can help with many. If you see warnings in strict mode, those things will likely cause bugs for async rendering.</p>
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>In version 16.3, StrictMode helps with:</p>
+					* Identifying components with unsafe lifecycles
+					* Warning about legacy string ref API usage
+					* Detecting unexpected side effects
+					</script>
+				</section>
+				<section data-markdown>
+					<script type='text/template'>
+					<p class='ta-l'>StrictMode checks are run in development mode only; they do not impact the production build.</p>
+					</script>
+				</section>
+			</section>
+			<section>
+				<h2>
+					Thank you !
+				</h2>
+			</section>
+		</div>
+	</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.js"></script>
+
+	<script>
+		// More info about config & dependencies:
+		// - https://github.com/hakimel/reveal.js#configuration
+		// - https://github.com/hakimel/reveal.js#dependencies
+		Reveal.initialize({
+			dependencies: [
+				{ src: 'plugin/markdown/marked.js' },
+				{ src: 'plugin/markdown/markdown.js' },
+				{ src: 'plugin/notes/notes.js', async: true },
+				{ src: 'plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } }
+			]
+		});
+	</script>
+</body>
+
+</html>
